@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: programwithgio-app
+    ports:
+        - "9000:9000"
+    working_dir: /var/www/
+    volumes:
+      - ./src:/var/www
+  nginx:
+    image: nginx:1.19-alpine
+    container_name: programwithgio-nginx
+    restart: always
+    # http://localhost:8000/<==host 8000 port will map to port 80 of the container
+    ports:
+      - 8000:80
+    volumes:
+      - ./src:/var/www
+      - ./nginx:/etc/nginx/conf.d
