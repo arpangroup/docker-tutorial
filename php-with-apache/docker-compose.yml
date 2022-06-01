@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.19-alpine
+    container_name: nginx-container
+    restart: always
+    # http://localhost:8000/<==host 8000 port will map to port 80 of the container
+    ports:
+      - 8000:80
+    volumes:
+      - ./src:/var/www
+      - ./nginx:/etc/nginx/conf.d    
+    depends_on:
+        - php
+        - mysql
+    networks:
+        - laravel
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    tty: true
+    ports:
+        - "3306:3306"
+    # volumes:
+    #     - ./mysql:/var/lib/mysql
+    environemnt:
+        MYSQL_DATABASE: homestead
+        MYSQL_USERNAME: arpan@Jana
+        MYSQL_PASSWORD: password
+        MYSQL_ROOT_PASSWORD: password
+        SERVICE_TAG: dev
+        SERVICE_NAME: mysql
+    networks:
+        - laravel
+
+  php:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: programwithgio-app
+    ports:
+        - "9000:9000"
+    working_dir: /var/www/
+    volumes:
+      - ./src:/var/www
+    networks:
+        - laravel
+
+
+

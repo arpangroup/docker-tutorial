@@ -1,23 +1,108 @@
+# version: '3.8'
+
+# services:
+#   php:
+#     build:
+#       context: ./
+#       dockerfile: Dockerfile
+#     container_name: programwithgio-app
+#     ports:
+#         - "9000:9000"
+#     working_dir: /var/www/
+#     volumes:
+#       - ./src:/var/www
+#   nginx:
+#     image: nginx:1.19-alpine
+#     container_name: programwithgio-nginx
+#     restart: always
+#     # http://localhost:8000/<==host 8000 port will map to port 80 of the container
+#     ports:
+#       - 8000:80
+#     volumes:
+#       - ./src:/var/www
+#       - ./nginx:/etc/nginx/conf.d
+
+
+
 version: '3.8'
 
 services:
+  #Nginx Service
+  webserver:
+    image: nginx:1.19-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # - ./src:/var/www
+      - ./pureeats:/var/www
+      - ./nginx:/etc/nginx/conf.d    
+    depends_on:
+        - php
+        - db
+    networks:
+        - laravel
+
+  #MySQL Service
+  db:
+    image: mysql
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+      # - ./mysql/initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: pureeats_test
+      MYSQL_USER: arpan
+      MYSQL_PASSWORD: password
+    networks:
+      - laravel
+  
+  #PHP Service
   php:
     build:
       context: ./
       dockerfile: Dockerfile
-    container_name: programwithgio-app
+    container_name: app
     ports:
         - "9000:9000"
     working_dir: /var/www/
     volumes:
-      - ./src:/var/www
-  nginx:
-    image: nginx:1.19-alpine
-    container_name: programwithgio-nginx
-    restart: always
-    # http://localhost:8000/<==host 8000 port will map to port 80 of the container
+      # - ./src:/var/www
+      - ./pureeats:/var/www
+    networks:
+      - laravel
+
+  phpmyadmin:
+    image: phpmyadmin
     ports:
-      - 8000:80
-    volumes:
-      - ./src:/var/www
-      - ./nginx:/etc/nginx/conf.d
+        - '8081:80'
+    restart: always
+    environment:
+      PMA_HOST: db
+      # MYSQL_USERNAME: root
+      # MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+        - db
+    # links:
+    #     - db:mysql
+    networks:
+      - laravel
+
+
+
+networks:
+  laravel:
+  
+#Volumes
+volumes:
+  dbdata:
+    driver: local
+
