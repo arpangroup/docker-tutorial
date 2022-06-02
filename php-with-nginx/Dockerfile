@@ -96,3 +96,9 @@ CMD ["php-fpm"]
 # php artisan serve --host=192.168.1.100
 # php artisan serve --port=443
 
+# FROM jenkins/jenkins:latest
+# ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
+# ENV CASC_JENKINS_CONFIG /var/jenkins_home/casc.yaml
+# COPY ./jenkins/plugins.txt /usr/share/jenkins/ref/plugins.txt
+# RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+# COPY ./jenkins/casc.yaml /var/jenkins_home/casc.yaml

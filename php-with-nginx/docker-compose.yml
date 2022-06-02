@@ -80,10 +80,12 @@ services:
     networks:
       - laravel
 
+  #PhpMyAdmin Service
   phpmyadmin:
     image: phpmyadmin
+    container_name: phpmyadmin
     ports:
-        - '8081:80'
+        - '8888:80'
     restart: always
     environment:
       PMA_HOST: db
@@ -96,6 +98,34 @@ services:
     networks:
       - laravel
 
+  #Jenkins Service : docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
+  #https://dev.to/andresfmoya/install-jenkins-using-docker-compose-4cab
+  # https://www.digitalocean.com/community/tutorials/how-to-automate-jenkins-setup-with-docker-and-jenkins-configuration-as-code
+  jenkins:
+    image: jenkins/jenkins:lts
+    # image: jenkins/jenkins:2.223.1
+    container_name: jenkins-server
+    privileged: true
+    user: root
+    ports:
+        - '8080:8080'
+        - '50000:50000'
+    restart: always
+    volumes:
+      # - ~/jenkins:/var/jenkins_home #This volume will be used to persist all your data: configurations, plugins, pipelines, passwords, etc.
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /home/${myname}/jenkins_compose/jenkins_configuration:/var/jenkins_home
+      # - /var/run/docker.sock:/var/run/docker.sock
+      # - ./jenkins-docker-certs:/certs/client # Docker client certs.
+      # - ./jenkins-data:/var/jenkins_home # Preserves Jenkins data like job definitions, credentials, build logs, etc.
+      # - ./extras:/extras # Any extra data or files you want to cache between server restart can be saved here `/extras/`.
+      # - ./jenkins:/var/jenkins_home
+      # - /var/run/docker.sock:/var/run/docker.sock
+      # - /usr/local/bin/docker:/usr/local/bin/docker
+      # - ./plugins.txt
+    networks:
+      - laravel
 
 
 networks:
@@ -105,4 +135,5 @@ networks:
 volumes:
   dbdata:
     driver: local
+  jenkins-data: 
 
