@@ -1,0 +1,52 @@
+pipeline {
+  agent any
+  stages {
+    stage("verify tooling") {
+      steps {
+        sh '''
+          docker version
+          docker info
+          docker-compose version 
+          curl --version
+        '''
+      }
+    }
+    stage('Prune Docker data') {
+      steps {
+        sh 'docker system prune -a --volumes -f'
+      }
+    }
+    stage('Checkout Git repository') {      
+      steps {
+        script{
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'PrivateKey1', url: 'https://github.com/arpangroup/docker-tutorial.git']]])
+            sh "ls -lart ./*"
+            sh 'pwd'
+        }
+      }
+    }
+    stage('Start container') {
+      steps {
+        sh 'pwd'
+        sh 'cd ./php-with-nginx'
+        sh 'pwd'
+        sh 'ls -ltr'
+        // sh 'docker-compose up -d --no-color --wait'
+        sh 'docker-compose -f /var/lib/jenkins/workspace/docker-compose/php-with-nginx/docker-compose.yml up -d'
+        // sh 'docker-compose ps'
+         sh 'docker-compose -f /var/lib/jenkins/workspace/docker-compose/php-with-nginx/docker-compose.yml ps'
+      }
+    }
+    stage('Run tests against the container') {
+      steps {
+        sh 'curl http://localhost:3000/param?query=demo | jq'
+      }
+    }
+  }
+  post {
+    always {
+      sh 'docker compose down --remove-orphans -v'
+      sh 'docker compose ps'
+    }
+  }
+}

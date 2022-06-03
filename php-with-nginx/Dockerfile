@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
     vim \
     unzip \
     git \
-    curl
+    curl \
+    rsync
 
 
 # Clear cache
